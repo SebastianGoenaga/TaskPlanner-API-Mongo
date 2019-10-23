@@ -1,5 +1,9 @@
 package eci.cosw;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -7,6 +11,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 
 import eci.cosw.config.AppConfiguration;
 import eci.cosw.data.CustomerRepository;
@@ -80,13 +86,53 @@ public class Application implements CommandLineRunner {
         userRepository.save(new User("name8", "email8"));
         userRepository.save(new User("name9", "email9"));
         userRepository.save(new User("name10", "email10"));
-        
+
+
+        System.out.println("Todos that the dueDate has expire:");
+
+        Query query = new Query();
+        query.addCriteria(Criteria.where("dueDate").lt(new SimpleDateFormat("MMM dd - yyyy").format(new Date())));
+        List<Todo> todos = mongoOperation.find(query, Todo.class);
+        for (Todo todo : todos) {
+            System.out.println(todo);
+        }
+
+        System.out.println("Todos that are assigned to given user and have priority greater equal to 5:");
+        // query = new Query();
+        // query.addCriteria(Criteria.where("responsible").is("charles@example1.com").and("priority").gte(5));
+        // todos = mongoOperation.find(query, Todo.class);
+        // for (Todo todo : todos) {
+        //     System.out.println(todo);
+        // }
+
+        System.out.println("List users that have assigned more than 2 Todos:");
+        query = new Query();
+        query.addCriteria(Criteria.where("responsible").is("charles@example1.com"));
+        todos = mongoOperation.find(query, Todo.class);
+        for (Todo todo : todos) {
+            System.out.println(todo);
+        }
+
+        System.out.println("Todo list that contains the description with a length greater than 30 characters:");
+        query = new Query();
+        query.addCriteria(Criteria.where("description").regex(".{31,}"));
+        todos = mongoOperation.find(query, Todo.class);
+        for (Todo todo : todos) {
+            System.out.println(todo);
+        }
                 
 
         System.out.println("Customers found with findAll():");
         System.out.println("-------------------------------");
         for (Customer customer : customerRepository.findAll()) {
             System.out.println(customer);
+        }
+        System.out.println();
+
+        System.out.println("Todos found with findByResponsible():");
+        System.out.println("-------------------------------");
+        for (Todo todo : todoRepository.findByResponsible("responsible1")) {
+            System.out.println(todo);
         }
         System.out.println();
 
